@@ -8,8 +8,14 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.openclassrooms.myrepo.R;
 import com.openclassrooms.myrepo.model.Task;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Un adaptateur pour afficher la liste de tâches dans un RecyclerView.
@@ -36,28 +42,121 @@ public class TaskRecyclerViewAdapter extends ListAdapter<Task, TaskRecyclerViewA
     }
 
     /**
+
      * ViewHolder pour afficher les éléments de la liste de tâches.
+
      */
-    static class ViewHolder extends RecyclerView.ViewHolder {
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+
+
 
         private final TextView factTextView;
 
-        /**
-         * Constructeur du ViewHolder.
-         */
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            factTextView = itemView.findViewById(R.id.task_description);
-        }
+        private final TextView dueTimeTextView;
+
+        private final LinearProgressIndicator progressIndicator;
+
+
 
         /**
-         * Lie les données de la tâche au ViewHolder.
-         *
-         * @param task La tâche à afficher.
+
+         * Constructeur du ViewHolder.
+
          */
-        public void bind(Task task) {
-            factTextView.setText(task.getDescription());
+
+        public ViewHolder(@NonNull View itemView) {
+
+            super(itemView);
+
+            factTextView = itemView.findViewById(R.id.task_description);
+
+            dueTimeTextView = itemView.findViewById(R.id.task_duetime);
+
+            progressIndicator = itemView.findViewById(R.id.progress_horizontal);
+
         }
+
+
+
+        /**
+
+         * Lie les données de la tâche au ViewHolder.
+
+         *
+
+         * @param task La tâche à afficher.
+
+         */
+
+        public void bind(Task task) {
+
+            factTextView.setText(task.getDescription());
+
+
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+            String formattedDueTime = dateFormat.format(task.getDueTime());
+
+            dueTimeTextView.setText("Date limite : " + formattedDueTime);
+
+
+
+            int progress = calculateProgress(task.getDueTime());
+
+            progressIndicator.setProgress(progress);
+
+        }
+
+
+
+        /**
+
+         * Calcule la valeur de progression en pourcentage pour la barre de progression.
+
+         *
+
+         * @param dueTime La date d'échéance de la tâche.
+
+         * @return La valeur de progression en pourcentage.
+
+         */
+
+        private int calculateProgress(Date dueTime) {
+
+            Calendar calendarToday = Calendar.getInstance();
+
+            calendarToday.set(Calendar.HOUR_OF_DAY, 0);
+
+            calendarToday.set(Calendar.MINUTE, 0);
+
+            calendarToday.set(Calendar.SECOND, 0);
+
+            calendarToday.set(Calendar.MILLISECOND, 0);
+
+
+
+            Calendar calendarDueTime = Calendar.getInstance();
+
+            calendarDueTime.setTime(dueTime);
+
+            calendarDueTime.set(Calendar.HOUR_OF_DAY, 0);
+
+            calendarDueTime.set(Calendar.MINUTE, 0);
+
+            calendarDueTime.set(Calendar.SECOND, 0);
+
+            calendarDueTime.set(Calendar.MILLISECOND, 0);
+
+
+
+            int daysDifference = (int) ((calendarDueTime.getTimeInMillis() - calendarToday.getTimeInMillis()) / (24 * 60 * 60 * 1000));
+
+            return 100 - (daysDifference * 10);
+
+        }
+
     }
 
     /**
